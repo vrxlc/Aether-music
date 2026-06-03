@@ -1,726 +1,616 @@
-'use client'
-
-import * as React from 'react'
-import { Slot } from '@radix-ui/react-slot'
-import { cva, VariantProps } from 'class-variance-authority'
-import { PanelLeftIcon } from 'lucide-react'
-
-import { useIsMobile } from '@/hooks/use-mobile'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Separator } from '@/components/ui/separator'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
-import { Skeleton } from '@/components/ui/skeleton'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
-
-const SIDEBAR_COOKIE_NAME = 'sidebar_state'
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = '16rem'
-const SIDEBAR_WIDTH_MOBILE = '18rem'
-const SIDEBAR_WIDTH_ICON = '3rem'
-const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
-
-type SidebarContextProps = {
-  state: 'expanded' | 'collapsed'
-  open: boolean
-  setOpen: (open: boolean) => void
-  openMobile: boolean
-  setOpenMobile: (open: boolean) => void
-  isMobile: boolean
-  toggleSidebar: () => void
+"use client";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Search, Settings, X, Camera, Heart, Plus, Radio, Music, Trash2, Edit2, Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useMusic } from "@/contexts/music-context";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+interface NavItem {
+  id: string;
+  label: string;
+  icon?: React.ReactNode;
 }
-
-const SidebarContext = React.createContext<SidebarContextProps | null>(null)
-
-function useSidebar() {
-  const context = React.useContext(SidebarContext)
-  if (!context) {
-    throw new Error('useSidebar must be used within a SidebarProvider.')
-  }
-
-  return context
+const navItems: NavItem[] = [
+  { id: "discover", label: "Discover", icon: <Music className="w-4 h-4" /> },
+  { id: "vibe-vault", label: "Vibe Vault", icon: <Heart className="w-4 h-4" /> },
+  { id: "radio", label: "Live Radio", icon: <Radio className="w-4 h-4" /> },
+];
+interface SidebarProps {
+  activeSection: string;
+  onSectionChange: (section: string) => void;
 }
-
-function SidebarProvider({
-  defaultOpen = true,
-  open: openProp,
-  onOpenChange: setOpenProp,
-  className,
-  style,
-  children,
-  ...props
-}: React.ComponentProps<'div'> & {
-  defaultOpen?: boolean
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-}) {
-  const isMobile = useIsMobile()
-  const [openMobile, setOpenMobile] = React.useState(false)
-
-  // This is the internal state of the sidebar.
-  // We use openProp and setOpenProp for control from outside the component.
-  const [_open, _setOpen] = React.useState(defaultOpen)
-  const open = openProp ?? _open
-  const setOpen = React.useCallback(
-    (value: boolean | ((value: boolean) => boolean)) => {
-      const openState = typeof value === 'function' ? value(open) : value
-      if (setOpenProp) {
-        setOpenProp(openState)
-      } else {
-        _setOpen(openState)
+function ProfileModal({ onClose }: { onClose: () => void }) {
+  const { userProfile, updateUserProfile } = useMusic();
+  const [formData, setFormData] = useState({
+    name: userProfile.name,
+    email: userProfile.email,
+    bio: userProfile.bio,
+  });
+  const [avatarUrl, setAvatarUrl] = useState(userProfile.avatar);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const handleSave = () => {
+    updateUserProfile({
+      ...formData,
+      avatar: avatarUrl,
+    });
+    onClose();
+  };
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        alert("Please select an image file");
+        return;
       }
-
-      // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
-    },
-    [setOpenProp, open],
-  )
-
-  // Helper to toggle the sidebar.
-  const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
-  }, [isMobile, setOpen, setOpenMobile])
-
-  // Adds a keyboard shortcut to toggle the sidebar.
-  React.useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-        (event.metaKey || event.ctrlKey)
-      ) {
-        event.preventDefault()
-        toggleSidebar()
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert("File size must be less than 5MB");
+        return;
       }
+      // Create object URL for preview
+      const objectUrl = URL.createObjectURL(file);
+      setAvatarUrl(objectUrl);
     }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [toggleSidebar])
-
-  // We add a state so that we can do data-state="expanded" or "collapsed".
-  // This makes it easier to style the sidebar with Tailwind classes.
-  const state = open ? 'expanded' : 'collapsed'
-
-  const contextValue = React.useMemo<SidebarContextProps>(
-    () => ({
-      state,
-      open,
-      setOpen,
-      isMobile,
-      openMobile,
-      setOpenMobile,
-      toggleSidebar,
-    }),
-    [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
-  )
-
+  };
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
   return (
-    <SidebarContext.Provider value={contextValue}>
-      <TooltipProvider delayDuration={0}>
-        <div
-          data-slot="sidebar-wrapper"
-          style={
-            {
-              '--sidebar-width': SIDEBAR_WIDTH,
-              '--sidebar-width-icon': SIDEBAR_WIDTH_ICON,
-              ...style,
-            } as React.CSSProperties
-          }
-          className={cn(
-            'group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full',
-            className,
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="relative z-10 w-full max-w-md glass-strong rounded-2xl p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-light text-foreground">Edit Profile</h2>
+          <button
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex justify-center mb-6">
+          <div className="relative group">
+            <div className="w-24 h-24 rounded-full overflow-hidden ring-2 ring-white/10">
+              <img
+                src={avatarUrl}
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <button
+              onClick={handleAvatarClick}
+              className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+            >
+              <Camera className="w-6 h-6 text-white" />
+              <span className="text-[10px] text-white mt-1">Upload Photo</span>
+            </button>
+          </div>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
+              Display Name
+            </label>
+            <Input
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="bg-white/5 border-white/10 focus:border-primary/50"
+              placeholder="Your name"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
+              Email
+            </label>
+            <Input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="bg-white/5 border-white/10 focus:border-primary/50"
+              placeholder="your@email.com"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
+              Bio
+            </label>
+            <textarea
+              value={formData.bio}
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 text-sm rounded-md bg-white/5 border border-white/10 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/50 resize-none text-foreground placeholder:text-muted-foreground"
+              placeholder="Tell us about yourself..."
+            />
+          </div>
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">
+                {userProfile.isPremium ? "Premium Member" : "Free Member"}
+              </span>
+              {userProfile.isPremium && (
+                <span className="px-2 py-0.5 text-[10px] uppercase tracking-wider bg-gradient-to-r from-amber-500/20 to-amber-600/20 text-amber-400 rounded-full">
+                  Premium
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="flex gap-3 mt-6">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 border-white/10 hover:bg-white/5"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSave}
+            className="flex-1 bg-primary hover:bg-primary/90"
+          >
+            Save Changes
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+function SearchModal({ onClose }: { onClose: () => void }) {
+  const { searchQuery, setSearchQuery, searchResults, playTrack, tracks } = useMusic();
+  const displayTracks = searchQuery.trim() ? searchResults : tracks;
+  const title = searchQuery.trim() ? `Search results for "${searchQuery}"` : "All Tracks";
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4"
+      onClick={onClose}
+    >
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      
+      <motion.div
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        exit={{ y: -20, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="relative z-10 w-full max-w-2xl glass-strong rounded-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-4 border-b border-white/5">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by title, artist, album, or genre..."
+              className="pl-10 bg-white/5 border-white/10 focus:border-primary/50"
+              autoFocus
+            />
+          </div>
+        </div>
+        <div className="max-h-[60vh] overflow-y-auto p-4">
+          <h3 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
+            {title} ({displayTracks.length})
+          </h3>
+          {displayTracks.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-muted-foreground">No tracks found</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">
+                Try searching for a different term
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {displayTracks.map((track, index) => (
+                <motion.button
+                  key={track.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03 }}
+                  onClick={() => {
+                    playTrack(track);
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-white/5 transition-colors group text-left"
+                >
+                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0">
+                    <img
+                      src={track.artwork}
+                      alt={track.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                      {track.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {track.artist} &bull; {track.album}
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {track.genre}
+                  </div>
+                </motion.button>
+              ))}
+            </div>
           )}
-          {...props}
-        >
-          {children}
         </div>
-      </TooltipProvider>
-    </SidebarContext.Provider>
-  )
+      </motion.div>
+    </motion.div>
+  );
 }
-
-function Sidebar({
-  side = 'left',
-  variant = 'sidebar',
-  collapsible = 'offcanvas',
-  className,
-  children,
-  ...props
-}: React.ComponentProps<'div'> & {
-  side?: 'left' | 'right'
-  variant?: 'sidebar' | 'floating' | 'inset'
-  collapsible?: 'offcanvas' | 'icon' | 'none'
-}) {
-  const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
-
-  if (collapsible === 'none') {
-    return (
-      <div
-        data-slot="sidebar"
-        className={cn(
-          'bg-sidebar text-sidebar-foreground flex h-full w-(--sidebar-width) flex-col',
-          className,
-        )}
-        {...props}
-      >
-        {children}
-      </div>
-    )
-  }
-
-  if (isMobile) {
-    return (
-      <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
-        <SheetContent
-          data-sidebar="sidebar"
-          data-slot="sidebar"
-          data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
-          style={
-            {
-              '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
-            } as React.CSSProperties
-          }
-          side={side}
-        >
-          <SheetHeader className="sr-only">
-            <SheetTitle>Sidebar</SheetTitle>
-            <SheetDescription>Displays the mobile sidebar.</SheetDescription>
-          </SheetHeader>
-          <div className="flex h-full w-full flex-col">{children}</div>
-        </SheetContent>
-      </Sheet>
-    )
-  }
-
-  return (
-    <div
-      className="group peer text-sidebar-foreground hidden md:block"
-      data-state={state}
-      data-collapsible={state === 'collapsed' ? collapsible : ''}
-      data-variant={variant}
-      data-side={side}
-      data-slot="sidebar"
-    >
-      {/* This is what handles the sidebar gap on desktop */}
-      <div
-        data-slot="sidebar-gap"
-        className={cn(
-          'relative w-(--sidebar-width) bg-transparent transition-[width] duration-200 ease-linear',
-          'group-data-[collapsible=offcanvas]:w-0',
-          'group-data-[side=right]:rotate-180',
-          variant === 'floating' || variant === 'inset'
-            ? 'group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4)))]'
-            : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon)',
-        )}
-      />
-      <div
-        data-slot="sidebar-container"
-        className={cn(
-          'fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear md:flex',
-          side === 'left'
-            ? 'left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)]'
-            : 'right-0 group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)]',
-          // Adjust the padding for floating and inset variants.
-          variant === 'floating' || variant === 'inset'
-            ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
-            : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l',
-          className,
-        )}
-        {...props}
-      >
-        <div
-          data-sidebar="sidebar"
-          data-slot="sidebar-inner"
-          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
-        >
-          {children}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function SidebarTrigger({
-  className,
-  onClick,
-  ...props
-}: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar()
-
-  return (
-    <Button
-      data-sidebar="trigger"
-      data-slot="sidebar-trigger"
-      variant="ghost"
-      size="icon"
-      className={cn('size-7', className)}
-      onClick={(event) => {
-        onClick?.(event)
-        toggleSidebar()
-      }}
-      {...props}
-    >
-      <PanelLeftIcon />
-      <span className="sr-only">Toggle Sidebar</span>
-    </Button>
-  )
-}
-
-function SidebarRail({ className, ...props }: React.ComponentProps<'button'>) {
-  const { toggleSidebar } = useSidebar()
-
-  return (
-    <button
-      data-sidebar="rail"
-      data-slot="sidebar-rail"
-      aria-label="Toggle Sidebar"
-      tabIndex={-1}
-      onClick={toggleSidebar}
-      title="Toggle Sidebar"
-      className={cn(
-        'hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex',
-        'in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize',
-        '[[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize',
-        'hover:group-data-[collapsible=offcanvas]:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full',
-        '[[data-side=left][data-collapsible=offcanvas]_&]:-right-2',
-        '[[data-side=right][data-collapsible=offcanvas]_&]:-left-2',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SidebarInset({ className, ...props }: React.ComponentProps<'main'>) {
-  return (
-    <main
-      data-slot="sidebar-inset"
-      className={cn(
-        'bg-background relative flex w-full flex-1 flex-col',
-        'md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow-sm md:peer-data-[variant=inset]:peer-data-[state=collapsed]:ml-2',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SidebarInput({
-  className,
-  ...props
-}: React.ComponentProps<typeof Input>) {
-  return (
-    <Input
-      data-slot="sidebar-input"
-      data-sidebar="input"
-      className={cn('bg-background h-8 w-full shadow-none', className)}
-      {...props}
-    />
-  )
-}
-
-function SidebarHeader({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="sidebar-header"
-      data-sidebar="header"
-      className={cn('flex flex-col gap-2 p-2', className)}
-      {...props}
-    />
-  )
-}
-
-function SidebarFooter({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="sidebar-footer"
-      data-sidebar="footer"
-      className={cn('flex flex-col gap-2 p-2', className)}
-      {...props}
-    />
-  )
-}
-
-function SidebarSeparator({
-  className,
-  ...props
-}: React.ComponentProps<typeof Separator>) {
-  return (
-    <Separator
-      data-slot="sidebar-separator"
-      data-sidebar="separator"
-      className={cn('bg-sidebar-border mx-2 w-auto', className)}
-      {...props}
-    />
-  )
-}
-
-function SidebarContent({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="sidebar-content"
-      data-sidebar="content"
-      className={cn(
-        'flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SidebarGroup({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="sidebar-group"
-      data-sidebar="group"
-      className={cn('relative flex w-full min-w-0 flex-col p-2', className)}
-      {...props}
-    />
-  )
-}
-
-function SidebarGroupLabel({
-  className,
-  asChild = false,
-  ...props
-}: React.ComponentProps<'div'> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'div'
-
-  return (
-    <Comp
-      data-slot="sidebar-group-label"
-      data-sidebar="group-label"
-      className={cn(
-        'text-sidebar-foreground/70 ring-sidebar-ring flex h-8 shrink-0 items-center rounded-md px-2 text-xs font-medium outline-hidden transition-[margin,opacity] duration-200 ease-linear focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
-        'group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SidebarGroupAction({
-  className,
-  asChild = false,
-  ...props
-}: React.ComponentProps<'button'> & { asChild?: boolean }) {
-  const Comp = asChild ? Slot : 'button'
-
-  return (
-    <Comp
-      data-slot="sidebar-group-action"
-      data-sidebar="group-action"
-      className={cn(
-        'text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground absolute top-3.5 right-3 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
-        // Increases the hit area of the button on mobile.
-        'after:absolute after:-inset-2 md:after:hidden',
-        'group-data-[collapsible=icon]:hidden',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SidebarGroupContent({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="sidebar-group-content"
-      data-sidebar="group-content"
-      className={cn('w-full text-sm', className)}
-      {...props}
-    />
-  )
-}
-
-function SidebarMenu({ className, ...props }: React.ComponentProps<'ul'>) {
-  return (
-    <ul
-      data-slot="sidebar-menu"
-      data-sidebar="menu"
-      className={cn('flex w-full min-w-0 flex-col gap-1', className)}
-      {...props}
-    />
-  )
-}
-
-function SidebarMenuItem({ className, ...props }: React.ComponentProps<'li'>) {
-  return (
-    <li
-      data-slot="sidebar-menu-item"
-      data-sidebar="menu-item"
-      className={cn('group/menu-item relative', className)}
-      {...props}
-    />
-  )
-}
-
-const sidebarMenuButtonVariants = cva(
-  'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
-  {
-    variants: {
-      variant: {
-        default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-        outline:
-          'bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]',
-      },
-      size: {
-        default: 'h-8 text-sm',
-        sm: 'h-7 text-xs',
-        lg: 'h-12 text-sm group-data-[collapsible=icon]:p-0!',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
-  },
-)
-
-function SidebarMenuButton({
-  asChild = false,
-  isActive = false,
-  variant = 'default',
-  size = 'default',
-  tooltip,
-  className,
-  ...props
-}: React.ComponentProps<'button'> & {
-  asChild?: boolean
-  isActive?: boolean
-  tooltip?: string | React.ComponentProps<typeof TooltipContent>
-} & VariantProps<typeof sidebarMenuButtonVariants>) {
-  const Comp = asChild ? Slot : 'button'
-  const { isMobile, state } = useSidebar()
-
-  const button = (
-    <Comp
-      data-slot="sidebar-menu-button"
-      data-sidebar="menu-button"
-      data-size={size}
-      data-active={isActive}
-      className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-      {...props}
-    />
-  )
-
-  if (!tooltip) {
-    return button
-  }
-
-  if (typeof tooltip === 'string') {
-    tooltip = {
-      children: tooltip,
+function CreatePlaylistModal({ onClose }: { onClose: () => void }) {
+  const { createPlaylist } = useMusic();
+  const [name, setName] = useState("");
+  const handleCreate = () => {
+    if (name.trim()) {
+      createPlaylist(name.trim());
+      onClose();
     }
-  }
-
+  };
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{button}</TooltipTrigger>
-      <TooltipContent
-        side="right"
-        align="center"
-        hidden={state !== 'collapsed' || isMobile}
-        {...tooltip}
-      />
-    </Tooltip>
-  )
-}
-
-function SidebarMenuAction({
-  className,
-  asChild = false,
-  showOnHover = false,
-  ...props
-}: React.ComponentProps<'button'> & {
-  asChild?: boolean
-  showOnHover?: boolean
-}) {
-  const Comp = asChild ? Slot : 'button'
-
-  return (
-    <Comp
-      data-slot="sidebar-menu-action"
-      data-sidebar="menu-action"
-      className={cn(
-        'text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden transition-transform focus-visible:ring-2 [&>svg]:size-4 [&>svg]:shrink-0',
-        // Increases the hit area of the button on mobile.
-        'after:absolute after:-inset-2 md:after:hidden',
-        'peer-data-[size=sm]/menu-button:top-1',
-        'peer-data-[size=default]/menu-button:top-1.5',
-        'peer-data-[size=lg]/menu-button:top-2.5',
-        'group-data-[collapsible=icon]:hidden',
-        showOnHover &&
-          'peer-data-[active=true]/menu-button:text-sidebar-accent-foreground group-focus-within/menu-item:opacity-100 group-hover/menu-item:opacity-100 data-[state=open]:opacity-100 md:opacity-0',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SidebarMenuBadge({
-  className,
-  ...props
-}: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="sidebar-menu-badge"
-      data-sidebar="menu-badge"
-      className={cn(
-        'text-sidebar-foreground pointer-events-none absolute right-1 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-medium tabular-nums select-none',
-        'peer-hover/menu-button:text-sidebar-accent-foreground peer-data-[active=true]/menu-button:text-sidebar-accent-foreground',
-        'peer-data-[size=sm]/menu-button:top-1',
-        'peer-data-[size=default]/menu-button:top-1.5',
-        'peer-data-[size=lg]/menu-button:top-2.5',
-        'group-data-[collapsible=icon]:hidden',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-function SidebarMenuSkeleton({
-  className,
-  showIcon = false,
-  ...props
-}: React.ComponentProps<'div'> & {
-  showIcon?: boolean
-}) {
-  // Random width between 50 to 90%.
-  const width = React.useMemo(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`
-  }, [])
-
-  return (
-    <div
-      data-slot="sidebar-menu-skeleton"
-      data-sidebar="menu-skeleton"
-      className={cn('flex h-8 items-center gap-2 rounded-md px-2', className)}
-      {...props}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      onClick={onClose}
     >
-      {showIcon && (
-        <Skeleton
-          className="size-4 rounded-md"
-          data-sidebar="menu-skeleton-icon"
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        className="relative z-10 w-full max-w-sm glass-strong rounded-2xl p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 className="text-lg font-light text-foreground mb-4">Create New Playlist</h2>
+        
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Playlist name..."
+          className="bg-white/5 border-white/10 focus:border-primary/50 mb-4"
+          autoFocus
+          onKeyDown={(e) => e.key === "Enter" && handleCreate()}
         />
-      )}
-      <Skeleton
-        className="h-4 max-w-(--skeleton-width) flex-1"
-        data-sidebar="menu-skeleton-text"
-        style={
-          {
-            '--skeleton-width': width,
-          } as React.CSSProperties
-        }
-      />
-    </div>
-  )
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            className="flex-1 border-white/10 hover:bg-white/5"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreate}
+            disabled={!name.trim()}
+            className="flex-1 bg-primary hover:bg-primary/90"
+          >
+            Create
+          </Button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
 }
+export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [showProfile, setShowProfile] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
+  const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState("");
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-function SidebarMenuSub({ className, ...props }: React.ComponentProps<'ul'>) {
+  const { 
+    userProfile, 
+    setSearchQuery, 
+    likedSongIds, 
+    playlists, 
+    deletePlaylist, 
+    renamePlaylist 
+  } = useMusic();
+
+  useEffect(() => {
+    const handleOpenSearch = () => {
+      setShowSearch(true);
+      setMobileOpen(false);
+    };
+    window.addEventListener("open-search", handleOpenSearch);
+    return () => window.removeEventListener("open-search", handleOpenSearch);
+  }, []);
+
+  const handleCloseSearch = () => {
+    setShowSearch(false);
+    setSearchQuery("");
+  };
+  const handleStartRename = (playlistId: string, currentName: string) => {
+    setEditingPlaylistId(playlistId);
+    setEditingName(currentName);
+  };
+  const handleSaveRename = (playlistId: string) => {
+    if (editingName.trim()) {
+      renamePlaylist(playlistId, editingName.trim());
+    }
+    setEditingPlaylistId(null);
+    setEditingName("");
+  };
+  const SidebarInner = ({ mode }: { mode: "desktop" | "mobile" }) => {
+    return (
+      <aside
+        className={cn(
+          "top-0 bottom-24 p-6 flex flex-col z-10",
+          mode === "desktop"
+            ? "fixed left-0 w-64 hidden md:flex"
+            : "fixed left-0 top-0 h-screen w-72 max-w-[85vw] bg-background/95 backdrop-blur-md border-r border-white/10 flex md:hidden"
+        )}
+      >
+        {/* Logo */}
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-light tracking-[0.2em] text-foreground/90">AETHER</h1>
+            <p className="text-[10px] tracking-[0.3em] text-muted-foreground mt-1">MUSIC</p>
+          </div>
+          {mode === "mobile" && (
+            <button
+              aria-label="Close menu"
+              onClick={() => setMobileOpen(false)}
+              className="p-2 rounded-xl hover:bg-white/10 text-muted-foreground"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Search Button */}
+        <button
+          onClick={() => {
+            setShowSearch(true);
+            setMobileOpen(false);
+          }}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl glass hover:bg-white/10 transition-colors mb-6 group"
+        >
+          <Search className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
+            Search tracks...
+          </span>
+          <kbd className="ml-auto text-[10px] text-muted-foreground/60 px-1.5 py-0.5 rounded bg-white/5">
+            /
+          </kbd>
+        </button>
+
+        {/* Main Navigation */}
+        <nav className="flex-1 overflow-y-auto">
+          <div className="space-y-1 relative">
+            {navItems.map((item) => (
+              <motion.button
+                key={item.id}
+                onClick={() => {
+                  onSectionChange(item.id);
+                  if (mode === "mobile") setMobileOpen(false);
+                }}
+                onMouseEnter={() => setHoveredItem(item.id)}
+                onMouseLeave={() => setHoveredItem(null)}
+                className={cn(
+                  "relative w-full text-left py-3 px-4 text-sm font-light tracking-wide transition-colors duration-300 flex items-center gap-3",
+                  activeSection === item.id
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground/80"
+                )}
+              >
+                {(hoveredItem === item.id || activeSection === item.id) && (
+                  <motion.div
+                    layoutId={mode === "desktop" ? "nav-indicator" : `nav-indicator-${mode}`}
+                    className="absolute inset-0 rounded-xl glass"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                  />
+                )}
+                <span className="relative z-10">{item.icon}</span>
+                <span className="relative z-10">{item.label}</span>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Liked Songs */}
+          <div className="mt-8">
+            <button
+              onClick={() => {
+                onSectionChange("liked-songs");
+                if (mode === "mobile") setMobileOpen(false);
+              }}
+              className={cn(
+                "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors",
+                activeSection === "liked-songs"
+                  ? "glass text-foreground"
+                  : "hover:bg-white/5 text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <div className="w-8 h-8 rounded-md bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
+                <Heart className="w-4 h-4 text-foreground fill-foreground" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-light">Liked Songs</p>
+                <p className="text-[10px] text-muted-foreground">{likedSongIds.length} tracks</p>
+              </div>
+            </button>
+          </div>
+
+          {/* Playlists Section */}
+          <div className="mt-8">
+            <div className="flex items-center justify-between px-4 mb-3">
+              <h3 className="text-[10px] tracking-[0.2em] text-muted-foreground">YOUR PLAYLISTS</h3>
+              <button
+                onClick={() => {
+                  setShowCreatePlaylist(true);
+                  if (mode === "mobile") setMobileOpen(false);
+                }}
+                className="p-1 rounded hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+
+            {playlists.length === 0 ? (
+              <p className="px-4 text-xs text-muted-foreground/60">No playlists yet. Create one!</p>
+            ) : (
+              <div className="space-y-1">
+                {playlists.map((playlist) => (
+                  <div
+                    key={playlist.id}
+                    className={cn(
+                      "group relative flex items-center",
+                      activeSection === `playlist-${playlist.id}` && "bg-white/5 rounded-lg"
+                    )}
+                  >
+                    {editingPlaylistId === playlist.id ? (
+                      <div className="flex-1 flex items-center gap-2 px-4 py-2">
+                        <Input
+                          value={editingName}
+                          onChange={(e) => setEditingName(e.target.value)}
+                          className="h-7 text-sm bg-white/10 border-white/20"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleSaveRename(playlist.id);
+                            if (e.key === "Escape") setEditingPlaylistId(null);
+                          }}
+                        />
+                        <button onClick={() => handleSaveRename(playlist.id)} className="p-1 rounded hover:bg-white/10">
+                          <Check className="w-4 h-4 text-primary" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            onSectionChange(`playlist-${playlist.id}`);
+                            if (mode === "mobile") setMobileOpen(false);
+                          }}
+                          className="flex-1 text-left py-2 px-4 text-sm font-light text-muted-foreground hover:text-foreground/80 transition-colors"
+                        >
+                          <span className="truncate block">{playlist.name}</span>
+                          <span className="text-[10px] text-muted-foreground/60">{playlist.trackIds.length} tracks</span>
+                        </button>
+                        <div className="absolute right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => handleStartRename(playlist.id, playlist.name)}
+                            className="p-1 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => deletePlaylist(playlist.id)}
+                            className="p-1 rounded hover:bg-white/10 text-muted-foreground hover:text-red-400"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </nav>
+
+        {/* User Profile */}
+        <div className="mt-auto pt-6 border-t border-white/[0.05]">
+          <button
+            onClick={() => {
+              setShowProfile(true);
+              if (mode === "mobile") setMobileOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-white/5 transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/30 transition-all">
+              <img src={userProfile.avatar} alt={userProfile.name} className="w-full h-full object-cover" />
+            </div>
+            <div className="text-left flex-1 min-w-0">
+              <p className="text-sm font-light text-foreground/90 truncate">{userProfile.name}</p>
+              <p className="text-[10px] text-muted-foreground">{userProfile.isPremium ? "Premium" : "Free"}</p>
+            </div>
+            <Settings className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+          </button>
+        </div>
+      </aside>
+    );
+  };
+
   return (
-    <ul
-      data-slot="sidebar-menu-sub"
-      data-sidebar="menu-sub"
-      className={cn(
-        'border-sidebar-border mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l px-2.5 py-0.5',
-        'group-data-[collapsible=icon]:hidden',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
+    <>
+      <AnimatePresence>
+        {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+        {showSearch && <SearchModal onClose={handleCloseSearch} />}
+        {showCreatePlaylist && <CreatePlaylistModal onClose={() => setShowCreatePlaylist(false)} />}
+      </AnimatePresence>
 
-function SidebarMenuSubItem({
-  className,
-  ...props
-}: React.ComponentProps<'li'>) {
-  return (
-    <li
-      data-slot="sidebar-menu-sub-item"
-      data-sidebar="menu-sub-item"
-      className={cn('group/menu-sub-item relative', className)}
-      {...props}
-    />
-  )
-}
+      {/* Mobile top-left menu button */}
+      <div className="fixed top-4 left-4 z-20 md:hidden">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-muted-foreground"
+          aria-label="Open menu"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+      </div>
 
-function SidebarMenuSubButton({
-  asChild = false,
-  size = 'md',
-  isActive = false,
-  className,
-  ...props
-}: React.ComponentProps<'a'> & {
-  asChild?: boolean
-  size?: 'sm' | 'md'
-  isActive?: boolean
-}) {
-  const Comp = asChild ? Slot : 'a'
+      {/* Desktop sidebar */}
+      <SidebarInner mode="desktop" />
 
-  return (
-    <Comp
-      data-slot="sidebar-menu-sub-button"
-      data-sidebar="menu-sub-button"
-      data-size={size}
-      data-active={isActive}
-      className={cn(
-        'text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
-        'data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground',
-        size === 'sm' && 'text-xs',
-        size === 'md' && 'text-sm',
-        'group-data-[collapsible=icon]:hidden',
-        className,
-      )}
-      {...props}
-    />
-  )
-}
-
-export {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupAction,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarInput,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuBadge,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSkeleton,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-  SidebarProvider,
-  SidebarRail,
-  SidebarSeparator,
-  SidebarTrigger,
-  useSidebar,
+      {/* Mobile drawer */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-10 bg-black/60 backdrop-blur-sm md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+            />
+            <motion.div
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -20, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="z-30 md:hidden"
+            >
+              <SidebarInner mode="mobile" />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }

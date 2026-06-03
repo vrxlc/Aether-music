@@ -2,14 +2,28 @@
 
 import { useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Volume1, Maximize2, Heart, Shuffle, Repeat, Radio, Signal } from "lucide-react";
+import {
+  Play,
+  Pause,
+  SkipBack,
+  SkipForward,
+  Volume2,
+  VolumeX,
+  Volume1,
+  Maximize2,
+  Heart,
+  Shuffle,
+  Repeat,
+  Radio,
+  Signal,
+} from "lucide-react";
 import { useMusic } from "@/contexts/music-context";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 
 function Waveform({ isPlaying }: { isPlaying: boolean }) {
   const bars = 40;
-  
+
   return (
     <div className="flex items-center gap-[2px] h-8">
       {Array.from({ length: bars }).map((_, i) => (
@@ -72,7 +86,6 @@ function VinylModal({ onClose }: { onClose: () => void }) {
                   }
                 : {}
             }
-            
             style={{
               background: `
                 radial-gradient(circle at center, #1a1a1a 0%, #0a0a0a 30%),
@@ -112,9 +125,7 @@ function VinylModal({ onClose }: { onClose: () => void }) {
           <h2 className="text-2xl font-light tracking-wide text-foreground mb-2">
             {currentTrack.title}
           </h2>
-          <p className="text-muted-foreground">
-            {currentTrack.artist}
-          </p>
+          <p className="text-muted-foreground">{currentTrack.artist}</p>
         </div>
       </motion.div>
     </motion.div>
@@ -176,13 +187,16 @@ export function MediaPlayer() {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
+  const playerShellClass =
+    "fixed bottom-4 left-4 right-4 md:left-72 md:right-8 z-40";
+
   // Show radio player if in radio mode
   if (isRadioMode && currentRadio) {
     return (
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed bottom-4 left-72 right-8 z-40"
+        className={playerShellClass}
       >
         <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
           <div className="flex items-center gap-6">
@@ -299,11 +313,13 @@ export function MediaPlayer() {
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed bottom-4 left-72 right-8 z-40"
+        className={playerShellClass}
       >
         <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
           <div className="flex items-center justify-center py-2">
-            <p className="text-muted-foreground text-sm">Select a track to start playing</p>
+            <p className="text-muted-foreground text-sm">
+              Select a track to start playing
+            </p>
           </div>
         </div>
       </motion.div>
@@ -321,7 +337,7 @@ export function MediaPlayer() {
       <motion.div
         initial={{ y: 100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="fixed bottom-4 left-72 right-8 z-40"
+        className={playerShellClass}
       >
         <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
           <div className="flex items-center gap-6">
@@ -466,3 +482,4 @@ export function MediaPlayer() {
     </>
   );
 }
+
