@@ -106,8 +106,8 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
           </div>
         ) : (
           <div className="space-y-1">
-            {/* Header */}
-            <div className="grid grid-cols-[40px_1fr_1fr_100px] gap-4 px-4 py-2 text-xs text-muted-foreground border-b border-white/5">
+            {/* Header (desktop only) */}
+            <div className="hidden md:grid grid-cols-[40px_1fr_1fr_100px] gap-4 px-4 py-2 text-xs text-muted-foreground border-b border-white/5">
               <span>#</span>
               <span>TITLE</span>
               <span>ALBUM</span>
@@ -133,12 +133,14 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
                     }
                   }}
                   className={cn(
-                    "grid grid-cols-[40px_1fr_1fr_100px] gap-4 px-4 py-3 rounded-lg cursor-pointer group items-center transition-colors",
+                    // Mobile: simplified 1-row card (no column squeezing)
+                    "flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer group transition-colors",
+                    "md:grid md:grid-cols-[40px_1fr_1fr_100px] md:gap-4 md:items-center",
                     isCurrentTrack && "bg-white/[0.02]"
                   )}
                 >
-                  {/* Number / Play */}
-                  <div className="relative">
+                  {/* Number / Play (hidden on mobile) */}
+                  <div className="relative hidden md:block">
                     <span
                       className={cn(
                         "text-sm group-hover:invisible",
@@ -174,7 +176,7 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
                   </div>
 
                   {/* Title & Artist */}
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <img
                       src={track.artwork}
                       alt={track.title}
@@ -196,12 +198,12 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
                   </div>
 
                   {/* Album */}
-                  <p className="text-sm text-muted-foreground truncate">
+                  <p className="text-sm text-muted-foreground truncate hidden md:block">
                     {track.album}
                   </p>
 
                   {/* Duration & Actions */}
-                  <div className="flex items-center justify-end gap-3">
+                  <div className="flex items-center justify-end gap-3 flex-1 md:flex-none">
                     <span className="text-sm text-muted-foreground">
                       {Math.floor(track.duration / 60)}:
                       {(track.duration % 60).toString().padStart(2, "0")}

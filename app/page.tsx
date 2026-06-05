@@ -47,20 +47,75 @@ function AppContent() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
   return (
-    <div className="min-h-screen text-foreground overflow-x-hidden">
+    <div className="flex flex-col md:flex-row min-h-screen text-foreground overflow-x-hidden">
       <DynamicBackground />
-      
-      {/* Sidebar */}
-      <Sidebar
-        activeSection={activeSection}
-        onSectionChange={setActiveSection}
-      />
+
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      </div>
+
+      {/* Mobile Header */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-sm border-b border-white/[0.05]">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl glass-strong flex items-center justify-center">
+              <span className="text-[10px] tracking-[0.2em] text-foreground/90">A</span>
+            </div>
+            <div className="leading-tight">
+              <div className="text-sm font-light tracking-wider">AETHER</div>
+              <div className="text-[10px] text-muted-foreground">Mobile</div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("open-search"))}
+              className="p-2 rounded-xl glass hover:bg-white/10 text-muted-foreground"
+              aria-label="Search"
+            >
+              <span className="text-sm">🔎</span>
+            </button>
+            <button
+              onClick={() => setActiveSection("discover")}
+              className="p-2 rounded-xl glass hover:bg-white/10 text-muted-foreground"
+              aria-label="Discover"
+            >
+              <span className="text-sm">🎵</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile section tabs */}
+        <nav className="flex items-center justify-around px-4 pb-2">
+          {[
+            { id: "discover", label: "Discover" },
+            { id: "vibe-vault", label: "Vibe Vault" },
+            { id: "liked-songs", label: "Liked" },
+            { id: "radio", label: "Radio" },
+          ].map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setActiveSection(item.id)}
+              className={
+                activeSection === item.id
+                  ? "px-3 py-1 rounded-full bg-white/10 text-foreground text-xs"
+                  : "px-3 py-1 rounded-full bg-transparent text-muted-foreground hover:text-foreground text-xs"
+              }
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
+      </header>
+
       {/* Main Content */}
-      <main className="ml-0 md:ml-64 pb-32 pt-8 pr-4 md:pr-8">
-        <div className="max-w-6xl mx-auto">
+      <main className="w-full md:flex-1 pt-16 md:pt-8 pb-32 md:pb-32 md:pr-8 px-4 md:px-6 overflow-x-hidden">
+        <div className="w-full max-w-6xl mx-auto">
           <MainContent activeSection={activeSection} />
         </div>
       </main>
+
       {/* Media Player */}
       <MediaPlayer />
     </div>

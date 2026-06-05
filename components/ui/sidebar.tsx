@@ -6,20 +6,24 @@ import { cn } from "@/lib/utils";
 import { useMusic } from "@/contexts/music-context";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+
 interface NavItem {
   id: string;
   label: string;
   icon?: React.ReactNode;
 }
+
 const navItems: NavItem[] = [
   { id: "discover", label: "Discover", icon: <Music className="w-4 h-4" /> },
   { id: "vibe-vault", label: "Vibe Vault", icon: <Heart className="w-4 h-4" /> },
   { id: "radio", label: "Live Radio", icon: <Radio className="w-4 h-4" /> },
 ];
+
 interface SidebarProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
 }
+
 function ProfileModal({ onClose }: { onClose: () => void }) {
   const { userProfile, updateUserProfile } = useMusic();
   const [formData, setFormData] = useState({
@@ -29,6 +33,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
   });
   const [avatarUrl, setAvatarUrl] = useState(userProfile.avatar);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
   const handleSave = () => {
     updateUserProfile({
       ...formData,
@@ -36,27 +41,23 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
     });
     onClose();
   };
+
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith("image/")) {
         alert("Please select an image file");
         return;
       }
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         alert("File size must be less than 5MB");
         return;
       }
-      // Create object URL for preview
       const objectUrl = URL.createObjectURL(file);
       setAvatarUrl(objectUrl);
     }
   };
-  const handleAvatarClick = () => {
-    fileInputRef.current?.click();
-  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -66,7 +67,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      
+
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -84,6 +85,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
             <X className="w-5 h-5" />
           </button>
         </div>
+
         <div className="flex justify-center mb-6">
           <div className="relative group">
             <div className="w-24 h-24 rounded-full overflow-hidden ring-2 ring-white/10">
@@ -101,7 +103,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
               className="hidden"
             />
             <button
-              onClick={handleAvatarClick}
+              onClick={() => fileInputRef.current?.click()}
               className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
             >
               <Camera className="w-6 h-6 text-white" />
@@ -109,6 +111,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
             </button>
           </div>
         </div>
+
         <div className="space-y-4">
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
@@ -121,6 +124,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
               placeholder="Your name"
             />
           </div>
+
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
               Email
@@ -133,6 +137,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
               placeholder="your@email.com"
             />
           </div>
+
           <div>
             <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
               Bio
@@ -145,6 +150,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
               placeholder="Tell us about yourself..."
             />
           </div>
+
           <div className="flex items-center justify-between pt-2">
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
@@ -158,6 +164,7 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
         </div>
+
         <div className="flex gap-3 mt-6">
           <Button
             variant="outline"
@@ -177,10 +184,12 @@ function ProfileModal({ onClose }: { onClose: () => void }) {
     </motion.div>
   );
 }
+
 function SearchModal({ onClose }: { onClose: () => void }) {
   const { searchQuery, setSearchQuery, searchResults, playTrack, tracks } = useMusic();
   const displayTracks = searchQuery.trim() ? searchResults : tracks;
   const title = searchQuery.trim() ? `Search results for "${searchQuery}"` : "All Tracks";
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -190,7 +199,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      
+
       <motion.div
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -211,10 +220,12 @@ function SearchModal({ onClose }: { onClose: () => void }) {
             />
           </div>
         </div>
+
         <div className="max-h-[60vh] overflow-y-auto p-4">
           <h3 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
             {title} ({displayTracks.length})
           </h3>
+
           {displayTracks.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No tracks found</p>
@@ -243,6 +254,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
                       className="w-full h-full object-cover"
                     />
                   </div>
+
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
                       {track.title}
@@ -251,9 +263,8 @@ function SearchModal({ onClose }: { onClose: () => void }) {
                       {track.artist} &bull; {track.album}
                     </p>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {track.genre}
-                  </div>
+
+                  <div className="text-xs text-muted-foreground">{track.genre}</div>
                 </motion.button>
               ))}
             </div>
@@ -263,15 +274,18 @@ function SearchModal({ onClose }: { onClose: () => void }) {
     </motion.div>
   );
 }
+
 function CreatePlaylistModal({ onClose }: { onClose: () => void }) {
   const { createPlaylist } = useMusic();
   const [name, setName] = useState("");
+
   const handleCreate = () => {
     if (name.trim()) {
       createPlaylist(name.trim());
       onClose();
     }
   };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -281,7 +295,7 @@ function CreatePlaylistModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      
+
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -291,7 +305,7 @@ function CreatePlaylistModal({ onClose }: { onClose: () => void }) {
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-lg font-light text-foreground mb-4">Create New Playlist</h2>
-        
+
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -300,6 +314,7 @@ function CreatePlaylistModal({ onClose }: { onClose: () => void }) {
           autoFocus
           onKeyDown={(e) => e.key === "Enter" && handleCreate()}
         />
+
         <div className="flex gap-3">
           <Button
             variant="outline"
@@ -320,6 +335,7 @@ function CreatePlaylistModal({ onClose }: { onClose: () => void }) {
     </motion.div>
   );
 }
+
 export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -327,22 +343,11 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
   const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
   const [editingPlaylistId, setEditingPlaylistId] = useState<string | null>(null);
   const [editingName, setEditingName] = useState("");
-  const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { 
-    userProfile, 
-    setSearchQuery, 
-    likedSongIds, 
-    playlists, 
-    deletePlaylist, 
-    renamePlaylist 
-  } = useMusic();
+  const { userProfile, setSearchQuery, likedSongIds, playlists, deletePlaylist, renamePlaylist } = useMusic();
 
   useEffect(() => {
-    const handleOpenSearch = () => {
-      setShowSearch(true);
-      setMobileOpen(false);
-    };
+    const handleOpenSearch = () => setShowSearch(true);
     window.addEventListener("open-search", handleOpenSearch);
     return () => window.removeEventListener("open-search", handleOpenSearch);
   }, []);
@@ -351,10 +356,12 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
     setShowSearch(false);
     setSearchQuery("");
   };
+
   const handleStartRename = (playlistId: string, currentName: string) => {
     setEditingPlaylistId(playlistId);
     setEditingName(currentName);
   };
+
   const handleSaveRename = (playlistId: string) => {
     if (editingName.trim()) {
       renamePlaylist(playlistId, editingName.trim());
@@ -362,48 +369,32 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
     setEditingPlaylistId(null);
     setEditingName("");
   };
-  const SidebarInner = ({ mode }: { mode: "desktop" | "mobile" }) => {
-    return (
-      <aside
-        className={cn(
-          "top-0 bottom-24 p-6 flex flex-col z-10",
-          mode === "desktop"
-            ? "fixed left-0 w-64 hidden md:flex"
-            : "fixed left-0 top-0 h-screen w-72 max-w-[85vw] bg-background/95 backdrop-blur-md border-r border-white/10 flex md:hidden"
-        )}
-      >
+
+  return (
+    <>
+      <AnimatePresence>
+        {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+        {showSearch && <SearchModal onClose={handleCloseSearch} />}
+        {showCreatePlaylist && <CreatePlaylistModal onClose={() => setShowCreatePlaylist(false)} />}
+      </AnimatePresence>
+
+      <aside className="fixed left-0 top-0 bottom-24 w-64 p-6 flex flex-col z-10">
         {/* Logo */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-light tracking-[0.2em] text-foreground/90">AETHER</h1>
-            <p className="text-[10px] tracking-[0.3em] text-muted-foreground mt-1">MUSIC</p>
-          </div>
-          {mode === "mobile" && (
-            <button
-              aria-label="Close menu"
-              onClick={() => setMobileOpen(false)}
-              className="p-2 rounded-xl hover:bg-white/10 text-muted-foreground"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
+        <div className="mb-8">
+          <h1 className="text-xl font-light tracking-[0.2em] text-foreground/90">AETHER</h1>
+          <p className="text-[10px] tracking-[0.3em] text-muted-foreground mt-1">MUSIC</p>
         </div>
 
         {/* Search Button */}
         <button
-          onClick={() => {
-            setShowSearch(true);
-            setMobileOpen(false);
-          }}
+          onClick={() => setShowSearch(true)}
           className="flex items-center gap-3 px-4 py-3 rounded-xl glass hover:bg-white/10 transition-colors mb-6 group"
         >
           <Search className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
           <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
             Search tracks...
           </span>
-          <kbd className="ml-auto text-[10px] text-muted-foreground/60 px-1.5 py-0.5 rounded bg-white/5">
-            /
-          </kbd>
+          <kbd className="ml-auto text-[10px] text-muted-foreground/60 px-1.5 py-0.5 rounded bg-white/5">/</kbd>
         </button>
 
         {/* Main Navigation */}
@@ -412,10 +403,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
             {navItems.map((item) => (
               <motion.button
                 key={item.id}
-                onClick={() => {
-                  onSectionChange(item.id);
-                  if (mode === "mobile") setMobileOpen(false);
-                }}
+                onClick={() => onSectionChange(item.id)}
                 onMouseEnter={() => setHoveredItem(item.id)}
                 onMouseLeave={() => setHoveredItem(null)}
                 className={cn(
@@ -427,7 +415,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
               >
                 {(hoveredItem === item.id || activeSection === item.id) && (
                   <motion.div
-                    layoutId={mode === "desktop" ? "nav-indicator" : `nav-indicator-${mode}`}
+                    layoutId="nav-indicator"
                     className="absolute inset-0 rounded-xl glass"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -444,10 +432,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
           {/* Liked Songs */}
           <div className="mt-8">
             <button
-              onClick={() => {
-                onSectionChange("liked-songs");
-                if (mode === "mobile") setMobileOpen(false);
-              }}
+              onClick={() => onSectionChange("liked-songs")}
               className={cn(
                 "w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors",
                 activeSection === "liked-songs"
@@ -470,10 +455,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
             <div className="flex items-center justify-between px-4 mb-3">
               <h3 className="text-[10px] tracking-[0.2em] text-muted-foreground">YOUR PLAYLISTS</h3>
               <button
-                onClick={() => {
-                  setShowCreatePlaylist(true);
-                  if (mode === "mobile") setMobileOpen(false);
-                }}
+                onClick={() => setShowCreatePlaylist(true)}
                 className="p-1 rounded hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
               >
                 <Plus className="w-4 h-4" />
@@ -504,17 +486,17 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                             if (e.key === "Escape") setEditingPlaylistId(null);
                           }}
                         />
-                        <button onClick={() => handleSaveRename(playlist.id)} className="p-1 rounded hover:bg-white/10">
+                        <button
+                          onClick={() => handleSaveRename(playlist.id)}
+                          className="p-1 rounded hover:bg-white/10"
+                        >
                           <Check className="w-4 h-4 text-primary" />
                         </button>
                       </div>
                     ) : (
                       <>
                         <button
-                          onClick={() => {
-                            onSectionChange(`playlist-${playlist.id}`);
-                            if (mode === "mobile") setMobileOpen(false);
-                          }}
+                          onClick={() => onSectionChange(`playlist-${playlist.id}`)}
                           className="flex-1 text-left py-2 px-4 text-sm font-light text-muted-foreground hover:text-foreground/80 transition-colors"
                         >
                           <span className="truncate block">{playlist.name}</span>
@@ -546,10 +528,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         {/* User Profile */}
         <div className="mt-auto pt-6 border-t border-white/[0.05]">
           <button
-            onClick={() => {
-              setShowProfile(true);
-              if (mode === "mobile") setMobileOpen(false);
-            }}
+            onClick={() => setShowProfile(true)}
             className="w-full flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-white/5 transition-colors group"
           >
             <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/30 transition-all">
@@ -563,54 +542,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
           </button>
         </div>
       </aside>
-    );
-  };
-
-  return (
-    <>
-      <AnimatePresence>
-        {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
-        {showSearch && <SearchModal onClose={handleCloseSearch} />}
-        {showCreatePlaylist && <CreatePlaylistModal onClose={() => setShowCreatePlaylist(false)} />}
-      </AnimatePresence>
-
-      {/* Mobile top-left menu button */}
-      <div className="fixed top-4 left-4 z-20 md:hidden">
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-muted-foreground"
-          aria-label="Open menu"
-        >
-          <Settings className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Desktop sidebar */}
-      <SidebarInner mode="desktop" />
-
-      {/* Mobile drawer */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              className="fixed inset-0 z-10 bg-black/60 backdrop-blur-sm md:hidden"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileOpen(false)}
-            />
-            <motion.div
-              initial={{ x: -20, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -20, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="z-30 md:hidden"
-            >
-              <SidebarInner mode="mobile" />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </>
   );
 }
+

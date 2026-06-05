@@ -21,34 +21,6 @@ import { useMusic } from "@/contexts/music-context";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 
-function Waveform({ isPlaying }: { isPlaying: boolean }) {
-  const bars = 40;
-
-  return (
-    <div className="flex items-center gap-[2px] h-8">
-      {Array.from({ length: bars }).map((_, i) => (
-        <motion.div
-          key={i}
-          className="w-[3px] bg-gradient-to-t from-primary/40 to-primary/80 rounded-full"
-          animate={
-            isPlaying
-              ? {
-                  height: [8, Math.random() * 24 + 8, 8],
-                }
-              : { height: 8 }
-          }
-          transition={{
-            duration: 0.5 + Math.random() * 0.3,
-            repeat: Infinity,
-            repeatType: "reverse",
-            delay: i * 0.02,
-          }}
-        />
-      ))}
-    </div>
-  );
-}
-
 function VinylModal({ onClose }: { onClose: () => void }) {
   const { currentTrack, isPlaying } = useMusic();
 
@@ -187,8 +159,7 @@ export function MediaPlayer() {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  const playerShellClass =
-    "fixed bottom-4 left-4 right-4 md:left-72 md:right-8 z-40";
+  const playerShellClass = "fixed bottom-0 left-0 right-0 w-full z-40";
 
   // Show radio player if in radio mode
   if (isRadioMode && currentRadio) {
@@ -199,10 +170,10 @@ export function MediaPlayer() {
         className={playerShellClass}
       >
         <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 w-full min-w-0">
             {/* Radio Info */}
-            <div className="flex items-center gap-4 min-w-[240px]">
-              <div className="relative w-14 h-14 rounded-xl overflow-hidden">
+            <div className="flex items-center gap-4 min-w-0 flex-1">
+              <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                 <img
                   src={currentRadio.logo}
                   alt={currentRadio.name}
@@ -212,8 +183,9 @@ export function MediaPlayer() {
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
                 )}
               </div>
-              <div className="text-left">
-                <div className="flex items-center gap-2">
+
+              <div className="text-left min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate max-w-[140px]">
                     {currentRadio.name}
                   </p>
@@ -229,13 +201,12 @@ export function MediaPlayer() {
             </div>
 
             {/* Radio Icon */}
-            <div className="text-muted-foreground">
+            <div className="text-muted-foreground flex-shrink-0">
               <Radio className="w-5 h-5" />
             </div>
 
             {/* Center Controls */}
-            <div className="flex-1 flex flex-col items-center gap-2">
-              {/* Playback Controls */}
+            <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
               <div className="flex items-center gap-4">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
@@ -260,7 +231,6 @@ export function MediaPlayer() {
                 </motion.button>
               </div>
 
-              {/* Live indicator */}
               <div className="flex items-center gap-2">
                 <div className="flex items-end gap-[2px]">
                   {[...Array(5)].map((_, i) => (
@@ -281,17 +251,17 @@ export function MediaPlayer() {
             </div>
 
             {/* Volume Control */}
-            <div className="flex items-center gap-2 min-w-[140px]">
+            <div className="flex items-center gap-2 min-w-0 w-auto md:min-w-[140px]">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleMute}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
               >
                 {getVolumeIcon()}
               </motion.button>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Slider
                   value={[isMuted ? 0 : volume * 100]}
                   max={100}
@@ -307,7 +277,7 @@ export function MediaPlayer() {
     );
   }
 
-  // Show empty state if no track or radio
+  // Show empty state if no track
   if (!currentTrack) {
     return (
       <motion.div
@@ -340,15 +310,15 @@ export function MediaPlayer() {
         className={playerShellClass}
       >
         <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 w-full min-w-0">
             {/* Track Info */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowExpanded(true)}
-              className="flex items-center gap-4 min-w-[240px] group"
+              className="flex items-center gap-4 min-w-0 group flex-1"
             >
-              <div className="relative w-14 h-14 rounded-xl overflow-hidden">
+              <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                 <img
                   src={currentTrack.artwork}
                   alt={currentTrack.title}
@@ -358,7 +328,7 @@ export function MediaPlayer() {
                   <Maximize2 className="w-4 h-4 text-white" />
                 </div>
               </div>
-              <div className="text-left">
+              <div className="text-left min-w-0">
                 <p className="text-sm font-medium text-foreground truncate max-w-[160px]">
                   {currentTrack.title}
                 </p>
@@ -374,21 +344,22 @@ export function MediaPlayer() {
               whileTap={{ scale: 0.9 }}
               onClick={() => toggleLike(currentTrack.id)}
               className={cn(
-                "transition-colors",
-                trackIsLiked ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                "transition-colors flex-shrink-0",
+                trackIsLiked
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               <Heart className={cn("w-5 h-5", trackIsLiked && "fill-current")} />
             </motion.button>
 
             {/* Center Controls & Progress */}
-            <div className="flex-1 flex flex-col items-center gap-2">
-              {/* Playback Controls */}
+            <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
               <div className="flex items-center gap-4">
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                 >
                   <Shuffle className="w-4 h-4" />
                 </motion.button>
@@ -397,7 +368,7 @@ export function MediaPlayer() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={previousTrack}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                 >
                   <SkipBack className="w-5 h-5" />
                 </motion.button>
@@ -406,7 +377,7 @@ export function MediaPlayer() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={togglePlay}
-                  className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center"
+                  className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center flex-shrink-0"
                 >
                   {isPlaying ? (
                     <Pause className="w-5 h-5 text-background" />
@@ -419,7 +390,7 @@ export function MediaPlayer() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={nextTrack}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                 >
                   <SkipForward className="w-5 h-5" />
                 </motion.button>
@@ -427,19 +398,18 @@ export function MediaPlayer() {
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
                 >
                   <Repeat className="w-4 h-4" />
                 </motion.button>
               </div>
 
-              {/* Progress Bar */}
-              <div className="w-full max-w-xl flex items-center gap-3">
-                <span className="text-xs text-muted-foreground w-10 text-right tabular-nums">
+              <div className="w-full flex items-center gap-3 min-w-0">
+                <span className="text-xs text-muted-foreground w-10 text-right tabular-nums flex-shrink-0">
                   {formatTime(currentTime)}
                 </span>
 
-                <div className="flex-1 relative group">
+                <div className="flex-1 min-w-0 relative group">
                   <Slider
                     value={[progress]}
                     max={100}
@@ -449,24 +419,24 @@ export function MediaPlayer() {
                   />
                 </div>
 
-                <span className="text-xs text-muted-foreground w-10 tabular-nums">
+                <span className="text-xs text-muted-foreground w-10 tabular-nums flex-shrink-0">
                   {formatTime(duration || currentTrack.duration)}
                 </span>
               </div>
             </div>
 
             {/* Volume Control */}
-            <div className="flex items-center gap-2 min-w-[140px]">
+            <div className="flex items-center gap-2 min-w-0 w-auto md:min-w-[140px]">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={toggleMute}
-                className="text-muted-foreground hover:text-foreground transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0"
               >
                 {getVolumeIcon()}
               </motion.button>
 
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Slider
                   value={[isMuted ? 0 : volume * 100]}
                   max={100}
