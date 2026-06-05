@@ -159,7 +159,8 @@ export function MediaPlayer() {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  const playerShellClass = "fixed bottom-0 left-0 right-0 w-full z-40";
+  const playerShellClass = "fixed bottom-0 left-0 right-0 w-full z-40 md:left-72 md:right-8";
+
 
   // Show radio player if in radio mode
   if (isRadioMode && currentRadio) {
