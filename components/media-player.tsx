@@ -159,8 +159,9 @@ export function MediaPlayer() {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  const playerShellClass = "fixed bottom-0 left-0 right-0 w-full z-40 md:left-72 md:right-8";
-
+  // Mobile: full-width. Desktop: offset to sit next to sidebar.
+  const playerShellClass =
+    "fixed bottom-0 left-0 right-0 w-full z-40 md:left-72 md:right-8";
 
   // Show radio player if in radio mode
   if (isRadioMode && currentRadio) {
@@ -213,7 +214,7 @@ export function MediaPlayer() {
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={togglePlay}
-                  className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center"
+                  className="w-10 h-10 rounded-full bg-foreground flex items-center justify-center flex-shrink-0"
                 >
                   {isPlaying ? (
                     <Pause className="w-5 h-5 text-background" />
@@ -238,7 +239,9 @@ export function MediaPlayer() {
                     <motion.div
                       key={i}
                       className="w-[3px] bg-red-500/60 rounded-full"
-                      animate={isPlaying ? { height: [4, 12, 4] } : { height: 4 }}
+                      animate={
+                        isPlaying ? { height: [4, 12, 4] } : { height: 4 }
+                      }
                       transition={{
                         duration: 0.5,
                         repeat: Infinity,
@@ -251,8 +254,8 @@ export function MediaPlayer() {
               </div>
             </div>
 
-            {/* Volume Control */}
-            <div className="flex items-center gap-2 min-w-0 w-auto md:min-w-[140px]">
+            {/* Volume Control (hide on mobile) */}
+            <div className="hidden md:flex items-center gap-2 min-w-0 w-auto md:min-w-[140px]">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
@@ -329,6 +332,7 @@ export function MediaPlayer() {
                   <Maximize2 className="w-4 h-4 text-white" />
                 </div>
               </div>
+
               <div className="text-left min-w-0">
                 <p className="text-sm font-medium text-foreground truncate max-w-[160px]">
                   {currentTrack.title}
@@ -426,8 +430,8 @@ export function MediaPlayer() {
               </div>
             </div>
 
-            {/* Volume Control */}
-            <div className="flex items-center gap-2 min-w-0 w-auto md:min-w-[140px]">
+            {/* Volume Control (hide on mobile) */}
+            <div className="hidden md:flex items-center gap-2 min-w-0 w-auto md:min-w-[140px]">
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
