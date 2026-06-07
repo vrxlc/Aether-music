@@ -54,7 +54,7 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
       <section className="relative rounded-3xl overflow-hidden glass-strong">
         <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/10" />
         
-        <div className="relative p-8 flex items-end gap-6">
+        <div className="relative p-8 flex items-end justify-center gap-6">
           <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl shadow-black/30">
             {artworks.length >= 4 ? (
               <div className="w-full h-full grid grid-cols-2 grid-rows-2">

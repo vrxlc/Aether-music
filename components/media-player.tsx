@@ -314,13 +314,13 @@ export function MediaPlayer() {
         className={playerShellClass}
       >
         <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-6 w-full min-w-0 justify-center">
+          <div className="flex items-center gap-6 w-full min-w-0 justify-between">
             {/* Track Info */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowExpanded(true)}
-              className="flex items-center gap-4 min-w-0 group flex-1"
+              className="flex items-center gap-4 min-w-0 group flex-none"
             >
               <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
                 <img
