@@ -314,7 +314,7 @@ export function MediaPlayer() {
         className={playerShellClass}
       >
         <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-6 w-full min-w-0">
+          <div className="flex items-center gap-6 w-full min-w-0 justify-center">
             {/* Track Info */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -457,4 +457,5 @@ export function MediaPlayer() {
     </>
   );
 }
+
 
