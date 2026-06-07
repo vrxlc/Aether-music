@@ -363,9 +363,17 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
 
   useEffect(() => {
     const handleOpenSearch = () => setShowSearch(true);
+    const handleOpenProfile = () => setShowProfile(true);
+
     window.addEventListener("open-search", handleOpenSearch);
-    return () => window.removeEventListener("open-search", handleOpenSearch);
+    window.addEventListener("open-profile", handleOpenProfile);
+
+    return () => {
+      window.removeEventListener("open-search", handleOpenSearch);
+      window.removeEventListener("open-profile", handleOpenProfile);
+    };
   }, []);
+
 
   const handleCloseSearch = () => {
     setShowSearch(false);
@@ -406,7 +414,11 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
 
         {/* Search Button */}
         <button
-          onClick={() => setShowSearch(true)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowSearch(true);
+              }}
           className="flex items-center gap-3 px-4 py-3 rounded-xl glass hover:bg-white/10 transition-colors mb-6 group"
         >
           <Search className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
@@ -559,10 +571,15 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         {/* User Profile */}
         <div className="mt-auto pt-6 border-t border-white/[0.05]">
           <button
-            onClick={() => setShowProfile(true)}
+             onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setShowProfile(true);
+            }}
             className="w-full flex items-center gap-3 px-4 py-2 rounded-xl hover:bg-white/5 transition-colors group"
           >
             <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white/10 group-hover:ring-primary/30 transition-all">
+
               <img
                 src={userProfile.avatar}
                 alt={userProfile.name}

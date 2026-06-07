@@ -159,9 +159,13 @@ export function MediaPlayer() {
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  // Mobile: full-width. Desktop: offset to sit next to sidebar.
+  // Fixed shell positioning (was previously based on an undefined variable)
   const playerShellClass =
     "fixed bottom-0 left-0 right-0 w-full z-40 md:left-72 md:right-8";
+
+  // Mobile: full-width. Desktop: offset to sit next to sidebar.
+  // Keep it slightly inset and shorter in height on web.
+
 
   // Show radio player if in radio mode
   if (isRadioMode && currentRadio) {
@@ -171,7 +175,7 @@ export function MediaPlayer() {
         animate={{ y: 0, opacity: 1 }}
         className={playerShellClass}
       >
-        <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
+          <div className="glass-strong rounded-2xl px-4 py-[16px] shadow-2xl shadow-black/20">
           <div className="flex items-center gap-6 w-full min-w-0">
             {/* Radio Info */}
             <div className="flex items-center gap-4 min-w-0 flex-1">
@@ -289,7 +293,7 @@ export function MediaPlayer() {
         animate={{ y: 0, opacity: 1 }}
         className={playerShellClass}
       >
-        <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
+        <div className="glass-strong rounded-2xl p-[19px] shadow-2xl shadow-black/20">
           <div className="flex items-center justify-center py-2">
             <p className="text-muted-foreground text-sm">
               Select a track to start playing
@@ -313,8 +317,8 @@ export function MediaPlayer() {
         animate={{ y: 0, opacity: 1 }}
         className={playerShellClass}
       >
-        <div className="glass-strong rounded-2xl p-4 shadow-2xl shadow-black/20">
-          <div className="flex items-center gap-6 w-full min-w-0 justify-between">
+        <div className="glass-strong rounded-2xl p-[19px] shadow-2xl shadow-black/20">
+            <div className="mx-auto flex items-center gap-6 w-full max-w-6xl justify-between">
             {/* Track Info */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -334,7 +338,7 @@ export function MediaPlayer() {
               </div>
 
               <div className="text-left min-w-0">
-                <p className="text-sm font-medium text-foreground truncate max-w-[160px]">
+                <p className="text-sm font-medium text-foreground truncate max-w-[90px] sm:max-w-[160px]">
                   {currentTrack.title}
                 </p>
                 <p className="text-xs text-muted-foreground truncate max-w-[160px]">

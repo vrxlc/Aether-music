@@ -51,7 +51,7 @@ export function RadioSection() {
   };
 
   return (
-    <div className="space-y-10">
+<div className="space-y-10 pt-19 sm:pt-0">
       {/* Hero Section */}
       <section className="relative rounded-3xl overflow-hidden glass-strong">
         <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-purple-500/10" />
@@ -126,13 +126,36 @@ export function RadioSection() {
 
       {/* Region Filter */}
       <section>
-        <div className="flex items-center gap-2 mb-6">
-          <Globe className="w-4 h-4 text-muted-foreground" />
-          <span className="text-xs tracking-[0.2em] text-muted-foreground">FILTER BY REGION</span>
+        <div className="flex items-center justify-between gap-4 mb-[-20px]">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs tracking-[0.2em] text-muted-foreground"></span>
+          </div>
+
+          {/* Region dropdown (desktop only) */}
+          <div className="hidden md:flex items-center">
+            <label className="sr-only">Region</label>
+            <select
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value as typeof selectedRegion)}
+              className={cn(
+                "ml-auto px-3 py-2 rounded-xl glass-strong text-sm text-foreground outline-none",
+                "border border-white/10"
+              )}
+            >
+              {regions.map((region) => (
+                <option key={region} value={region} className="bg-background">
+                  {region === "all" ? "All Regions" : region}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-        
-        <div className="flex flex-wrap gap-2">
-          {regions.map((region) => (
+
+        {/* Mobile region tabs */}
+          <div className="flex flex-nowrap overflow-x-auto gap-2 md:hidden pb-[5px] pt-0">
+            <span className="sr-only">Filter regions</span>
+            {regions.map((region) => (
             <button
               key={region}
               onClick={() => setSelectedRegion(region)}
@@ -152,7 +175,7 @@ export function RadioSection() {
       {/* Stations by Region */}
       {Object.entries(groupedByRegion).map(([region, stations]) => (
         <section key={region}>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-[-35px]">
             <div className={cn("w-8 h-8 rounded-lg bg-gradient-to-br flex items-center justify-center overflow-hidden", regionColors[region as keyof typeof regionColors])}>
               <img 
                 src={regionFlags[region as keyof typeof regionFlags]} 

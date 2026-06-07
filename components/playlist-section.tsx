@@ -49,12 +49,14 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
   const artworks = playlistTracks.slice(0, 4).map(t => t.artwork);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 max-w-5xl mx-auto">
+
       {/* Hero Section */}
       <section className="relative rounded-3xl overflow-hidden glass-strong">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/10" />
-        
-        <div className="relative p-8 flex items-end justify-center gap-6">
+        <div className="relative p-8 flex items-end justify-center gap-6 text-left">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/10 via-transparent to-primary/10" />
+
+
           <div className="w-48 h-48 rounded-2xl overflow-hidden shadow-2xl shadow-black/30">
             {artworks.length >= 4 ? (
               <div className="w-full h-full grid grid-cols-2 grid-rows-2">
@@ -83,8 +85,9 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
           <div className="pb-2">
             <p className="text-xs tracking-[0.2em] text-muted-foreground mb-2">
               PLAYLIST
+
             </p>
-            <h1 className="text-4xl font-light tracking-tight text-foreground mb-3">
+            <h1 className="text-4xl font-light tracking-tight text-foreground mb-3 text-left">
               {playlist.name}
             </h1>
             <p className="text-muted-foreground">
@@ -94,7 +97,9 @@ export function PlaylistSection({ playlistId }: PlaylistSectionProps) {
         </div>
       </section>
 
+
       {/* Track List */}
+
       <section>
         {playlistTracks.length === 0 ? (
           <div className="text-center py-16">

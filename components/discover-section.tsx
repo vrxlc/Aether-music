@@ -55,7 +55,7 @@ export function DiscoverSection() {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 pt-[30px] md:pt-0 md:pl-[20px]">
       {/* Mood Boards - Masonry Layout */}
       <section>
         <h2 className="text-lg font-light tracking-wide text-foreground/90 mb-6">
@@ -88,7 +88,7 @@ export function DiscoverSection() {
               </div>
               
               <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                <h3 className="text-lg font-light text-white mb-1">
+                <h3 className="text-lg font-light text-white mb-1 md:mb-0">
                   {board.title}
                 </h3>
                 <p className="text-sm text-white/60">{board.description}</p>
@@ -114,7 +114,7 @@ export function DiscoverSection() {
           All Tracks
         </h2>
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-[13px] gap-y-4 lg:gap-y-4">
           {tracks.map((track, index) => {
             const isCurrentTrack = currentTrack?.id === track.id;
             
@@ -134,7 +134,7 @@ export function DiscoverSection() {
                   }
                 }}
               >
-                <div className="relative rounded-xl overflow-hidden mb-3 aspect-square glass">
+                <div className="relative rounded-xl overflow-hidden mb-2 md:mb-3 aspect-square glass">
                   <img
                     src={track.artwork}
                     alt={track.title}

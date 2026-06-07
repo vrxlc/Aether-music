@@ -146,7 +146,7 @@ const tracks: Track[] = [
     duration: 152,
     artwork: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-Qqo7S14v6KJjbcZjBdZRCD4cKmPIUV.png",
     colorTheme: "prismatic",
-    audioUrl: "https://cdn.pixabay.com/audio/2022/02/15/audio_8a8452a246.mp3",
+    audioUrl: "/audio/The_Line_Between_Day_&_Night.mp3",
     genre: "Cinematic",
   },
   {

@@ -29,9 +29,9 @@ export function VibeVaultSection() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-0.5 sm:mt-0 md:mt-0 mt-20">
       {/* Hero Section */}
-      <section className="relative rounded-3xl overflow-hidden glass-strong">
+      <section className="relative rounded-3xl overflow-hidden glass-strong pt-0.5 sm:pt-4 md:pt-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
         
         <div className="relative p-8 flex items-end gap-6">
@@ -41,7 +41,7 @@ export function VibeVaultSection() {
             </div>
           </div>
           
-          <div className="pb-2">
+          <div className="pb-3">
             <p className="text-xs tracking-[0.2em] text-muted-foreground mb-2">
               COLLECTION
             </p>

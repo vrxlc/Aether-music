@@ -19,7 +19,7 @@ export function LikedSongsSection() {
   const likedTracks = tracks.filter((track) => likedSongIds.includes(track.id));
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 pt-[76px] sm:pt-0">
       {/* Hero Section */}
       <section className="relative rounded-3xl overflow-hidden glass-strong">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20" />
