@@ -1,25 +1,40 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Play, Pause, Heart, Trash2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Play, Pause, Heart, Trash2, MoreHorizontal, Plus, Check } from "lucide-react";
+import { useState } from "react";
 import { useMusic } from "@/contexts/music-context";
 import { cn } from "@/lib/utils";
 
+
+
 export function LikedSongsSection() {
-  const { 
-    tracks, 
-    playTrack, 
-    currentTrack, 
-    isPlaying, 
-    togglePlay, 
-    toggleLike, 
-    likedSongIds 
+  const {
+    tracks,
+    playTrack,
+    currentTrack,
+    isPlaying,
+    togglePlay,
+    toggleLike,
+    likedSongIds,
+    playlists,
+    addToPlaylist,
   } = useMusic();
+
+  const [showPlaylistMenu, setShowPlaylistMenu] = useState<string | null>(null);
+  const [addedToPlaylist, setAddedToPlaylist] = useState<string | null>(null);
 
   const likedTracks = tracks.filter((track) => likedSongIds.includes(track.id));
 
+  const handleAddToPlaylist = (playlistId: string, trackId: string) => {
+    addToPlaylist(playlistId, trackId);
+    setAddedToPlaylist(`${playlistId}-${trackId}`);
+    setTimeout(() => setAddedToPlaylist(null), 1500);
+    setShowPlaylistMenu(null);
+  };
+
   return (
-    <div className="space-y-10 pt-[76px] sm:pt-0">
+    <div className="space-y-[9px] pt-[76px] sm:pt-0">
       {/* Hero Section */}
       <section className="relative rounded-3xl overflow-hidden glass-strong">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20" />
@@ -31,7 +46,7 @@ export function LikedSongsSection() {
             </div>
           </div>
           
-          <div className="pb-2">
+          <div className="pb-3">
             <p className="text-xs tracking-[0.2em] text-muted-foreground mb-2">
               COLLECTION
             </p>
@@ -92,7 +107,7 @@ export function LikedSongsSection() {
                   <div className="relative">
                     <span
                       className={cn(
-                        "text-sm group-hover:invisible",
+                        "text-sm",
                         isCurrentTrack ? "text-primary" : "text-muted-foreground"
                       )}
                     >
@@ -157,7 +172,71 @@ export function LikedSongsSection() {
                       {Math.floor(track.duration / 60)}:
                       {(track.duration % 60).toString().padStart(2, "0")}
                     </span>
-                    
+
+                    <div className="relative">
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowPlaylistMenu(showPlaylistMenu === track.id ? null : track.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
+                      </motion.button>
+
+                      <AnimatePresence>
+                        {showPlaylistMenu === track.id && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                            className="absolute right-0 top-full mt-2 w-56 glass-strong rounded-xl p-2 z-50"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <p className="text-xs text-muted-foreground px-2 py-1 mb-1">
+                              Add to playlist
+                            </p>
+                            {playlists.length === 0 ? (
+                              <p className="text-xs text-muted-foreground/60 px-2 py-2">No playlists yet</p>
+                            ) : (
+                              playlists.map((playlist) => {
+                                const alreadyAdded = playlist.trackIds.includes(track.id);
+                                const justAdded = addedToPlaylist === `${playlist.id}-${track.id}`;
+
+                                return (
+                                  <button
+                                    key={playlist.id}
+                                    onClick={() => {
+                                      if (alreadyAdded) return;
+                                      handleAddToPlaylist(playlist.id, track.id);
+                                    }}
+                                    disabled={alreadyAdded}
+                                    className={cn(
+                                      "w-full flex items-center gap-2 px-2 py-2 rounded-lg text-left text-sm transition-colors",
+                                      alreadyAdded
+                                        ? "text-muted-foreground/50 cursor-not-allowed"
+                                        : "text-foreground hover:bg-white/10"
+                                    )}
+                                  >
+                                    {justAdded ? (
+                                      <Check className="w-4 h-4 text-primary" />
+                                    ) : alreadyAdded ? (
+                                      <Check className="w-4 h-4 text-muted-foreground/50" />
+                                    ) : (
+                                      <Plus className="w-4 h-4" />
+                                    )}
+                                    <span className="truncate">{playlist.name}</span>
+                                  </button>
+                                );
+                              })
+                            )}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
                     <motion.button
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}

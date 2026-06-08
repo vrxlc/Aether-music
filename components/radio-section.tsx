@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Radio, Play, Pause, Globe, Signal, Volume2 } from "lucide-react";
+import { Radio, Play, Pause, Globe, Signal, Volume2, ChevronDown } from "lucide-react";
 import { useMusic, RadioStation } from "@/contexts/music-context";
 import { cn } from "@/lib/utils";
 
@@ -51,7 +51,7 @@ export function RadioSection() {
   };
 
   return (
-<div className="space-y-10 pt-19 sm:pt-0">
+<div className="space-y-10 pt-19 sm:pt-0 pb-[37px]">
       {/* Hero Section */}
       <section className="relative rounded-3xl overflow-hidden glass-strong">
         <div className="absolute inset-0 bg-gradient-to-br from-red-500/10 via-transparent to-purple-500/10" />
@@ -126,49 +126,31 @@ export function RadioSection() {
 
       {/* Region Filter */}
       <section>
-        <div className="flex items-center justify-between gap-4 mb-[-20px]">
+        <div className="flex items-center justify-between gap-4 mb-[-18px]">
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-muted-foreground" />
             <span className="text-xs tracking-[0.2em] text-muted-foreground"></span>
           </div>
 
-          {/* Region dropdown (desktop only) */}
-          <div className="hidden md:flex items-center">
+          {/* Region dropdown */}
+          <div className="flex items-center relative">
             <label className="sr-only">Region</label>
             <select
               value={selectedRegion}
               onChange={(e) => setSelectedRegion(e.target.value as typeof selectedRegion)}
               className={cn(
-                "ml-auto px-3 py-2 rounded-xl glass-strong text-sm text-foreground outline-none",
-                "border border-white/10"
+                "ml-auto px-4 py-2 pr-10 rounded-xl glass-strong text-[10px] tracking-[0.2em] uppercase text-foreground/80 outline-none cursor-pointer appearance-none",
+                "border border-white/10 hover:bg-white/10 transition-colors min-w-[140px] text-center"
               )}
             >
               {regions.map((region) => (
-                <option key={region} value={region} className="bg-background">
+                <option key={region} value={region} className="bg-[#1A1A1F] text-foreground">
                   {region === "all" ? "All Regions" : region}
                 </option>
               ))}
             </select>
+            <ChevronDown className="absolute right-3 w-3 h-3 text-muted-foreground pointer-events-none" />
           </div>
-        </div>
-
-        {/* Mobile region tabs */}
-          <div className="flex flex-nowrap overflow-x-auto gap-2 md:hidden pb-[5px] pt-0">
-            <span className="sr-only">Filter regions</span>
-            {regions.map((region) => (
-            <button
-              key={region}
-              onClick={() => setSelectedRegion(region)}
-              className={cn(
-                "px-4 py-2 rounded-full text-sm transition-all",
-                selectedRegion === region
-                  ? "glass text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
-              )}
-            >
-              {region === "all" ? "All Regions" : region}
-            </button>
-          ))}
         </div>
       </section>
 

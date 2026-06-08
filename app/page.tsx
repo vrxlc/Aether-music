@@ -9,6 +9,7 @@ import { VibeVaultSection } from "@/components/vibe-vault-section";
 import { LikedSongsSection } from "@/components/liked-songs-section";
 import { RadioSection } from "@/components/radio-section";
 import { PlaylistSection } from "@/components/playlist-section";
+import { ProfileSection } from "@/components/profile-section";
 function MainContent({ activeSection }: { activeSection: string }) {
   // Handle playlist sections
   if (activeSection.startsWith("playlist-")) {
@@ -24,6 +25,8 @@ function MainContent({ activeSection }: { activeSection: string }) {
       return <LikedSongsSection />;
     case "radio":
       return <RadioSection />;
+    case "profile":
+      return <ProfileSection />;
     default:
       return <DiscoverSection />;
   }
@@ -50,10 +53,8 @@ function AppContent() {
     <div className="flex flex-col md:flex-row min-h-screen text-foreground overflow-x-hidden">
       <DynamicBackground />
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block">
-        <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
-      </div>
+      {/* Sidebar handles its own responsive visibility but provides global modals */}
+      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
 
       {/* Mobile Header */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 bg-background/70 backdrop-blur-sm border-b border-white/[0.05]">
@@ -69,7 +70,7 @@ function AppContent() {
           </div>
 
           <div className="flex items-center gap-2">
-              <button
+            <button
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -110,6 +111,7 @@ function AppContent() {
             { id: "vibe-vault", label: "Vibe Vault" },
             { id: "liked-songs", label: "Liked" },
             { id: "radio", label: "Radio" },
+            { id: "profile", label: "Profile" },
           ].map((item) => (
             <button
               key={item.id}
@@ -134,6 +136,7 @@ function AppContent() {
       </main>
 
       {/* Media Player */}
+      <div className="h-[3px]" />
       <MediaPlayer />
     </div>
   );

@@ -29,7 +29,7 @@ export function VibeVaultSection() {
   };
 
   return (
-    <div className="space-y-0.5 sm:mt-0 md:mt-0 mt-20">
+    <div className="space-y-0.5 sm:mt-0 md:mt-0 mt-20 pb-4">
       {/* Hero Section */}
       <section className="relative rounded-3xl overflow-hidden glass-strong pt-0.5 sm:pt-4 md:pt-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10" />
@@ -42,6 +42,7 @@ export function VibeVaultSection() {
           </div>
           
           <div className="pb-3">
+            <h2 className="text-sm font-light text-foreground/80 mb-1">Aether&apos;s Special</h2>
             <p className="text-xs tracking-[0.2em] text-muted-foreground mb-2">
               COLLECTION
             </p>

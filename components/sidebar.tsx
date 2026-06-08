@@ -15,9 +15,9 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { id: "discover", label: "Discover", icon: <Music className="w-4 h-4" /> },
-  { id: "vibe-vault", label: "Vibe Vault", icon: <Heart className="w-4 h-4" /> },
-  { id: "radio", label: "Live Radio", icon: <Radio className="w-4 h-4" /> },
+  { id: "discover", label: "Discover", icon: <Music className="w-[19px] h-[19px]" /> },
+  { id: "vibe-vault", label: "Vibe Vault", icon: <Heart className="w-[19px] h-[19px]" /> },
+  { id: "radio", label: "Live Radio", icon: <Radio className="w-[19px] h-[19px]" /> },
 ];
 
 interface SidebarProps {
@@ -204,7 +204,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4"
+      className="fixed inset-0 z-50 flex items-start justify-center pt-40 md:pt-24 px-4"
       onClick={onClose}
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -231,6 +231,7 @@ function SearchModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-4">
+          <h2 className="text-sm font-light text-foreground/80 mb-1">Aether&apos;s Special</h2>
           <h3 className="text-xs text-muted-foreground uppercase tracking-wider mb-4">
             {title} ({displayTracks.length})
           </h3>
@@ -401,7 +402,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
         {showCreatePlaylist && <CreatePlaylistModal onClose={() => setShowCreatePlaylist(false)} />}
       </AnimatePresence>
 
-      <aside className="fixed left-0 top-0 bottom-24 w-64 p-6 flex flex-col z-10">
+      <aside className="hidden md:flex fixed left-0 top-0 bottom-24 w-64 p-6 flex-col z-10">
         {/* Logo */}
         <div className="mb-8">
           <h1 className="text-xl font-light tracking-[0.2em] text-foreground/90">
@@ -421,7 +422,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
               }}
           className="flex items-center gap-3 px-4 py-3 rounded-xl glass hover:bg-white/10 transition-colors mb-6 group"
         >
-          <Search className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          <Search className="w-[19px] h-[19px] text-muted-foreground group-hover:text-foreground transition-colors" />
           <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
             Search tracks...
           </span>
@@ -478,7 +479,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
               )}
             >
               <div className="w-8 h-8 rounded-md bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center">
-                <Heart className="w-4 h-4 text-foreground fill-foreground" />
+                <Heart className="w-[19px] h-[19px] text-foreground fill-foreground" />
               </div>
               <div className="text-left">
                 <p className="text-sm font-light">Liked Songs</p>
@@ -497,7 +498,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                 onClick={() => setShowCreatePlaylist(true)}
                 className="p-1 rounded hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-[19px] h-[19px]" />
               </button>
             </div>
             
@@ -531,7 +532,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                           onClick={() => handleSaveRename(playlist.id)}
                           className="p-1 rounded hover:bg-white/10"
                         >
-                          <Check className="w-4 h-4 text-primary" />
+                          <Check className="w-[19px] h-[19px] text-primary" />
                         </button>
                       </div>
                     ) : (
@@ -550,13 +551,13 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                             onClick={() => handleStartRename(playlist.id, playlist.name)}
                             className="p-1 rounded hover:bg-white/10 text-muted-foreground hover:text-foreground"
                           >
-                            <Edit2 className="w-3 h-3" />
+                            <Edit2 className="w-[15px] h-[15px]" />
                           </button>
                           <button
                             onClick={() => deletePlaylist(playlist.id)}
                             className="p-1 rounded hover:bg-white/10 text-muted-foreground hover:text-red-400"
                           >
-                            <Trash2 className="w-3 h-3" />
+                            <Trash2 className="w-[15px] h-[15px]" />
                           </button>
                         </div>
                       </>
@@ -594,7 +595,7 @@ export function Sidebar({ activeSection, onSectionChange }: SidebarProps) {
                 {userProfile.isPremium ? "Premium" : "Free"}
               </p>
             </div>
-            <Settings className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+            <Settings className="w-[19px] h-[19px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
       </aside>
