@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { MusicProvider } from "@/contexts/music-context";
 import { DynamicBackground } from "@/components/dynamic-background";
 import { Sidebar } from "@/components/sidebar";
@@ -10,6 +11,7 @@ import { LikedSongsSection } from "@/components/liked-songs-section";
 import { RadioSection } from "@/components/radio-section";
 import { PlaylistSection } from "@/components/playlist-section";
 import { ProfileSection } from "@/components/profile-section";
+import { LoginScreen } from "@/components/login-screen";
 function MainContent({ activeSection }: { activeSection: string }) {
   // Handle playlist sections
   if (activeSection.startsWith("playlist-")) {
@@ -33,8 +35,24 @@ function MainContent({ activeSection }: { activeSection: string }) {
 }
 function AppContent() {
   const [activeSection, setActiveSection] = useState("discover");
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const searchParams = useSearchParams();
+
+  // Handle deep-linking to sections (e.g., returning from billing)
+  useEffect(() => {
+    const section = searchParams.get("section");
+    if (section) {
+      setActiveSection(section);
+    }
+  }, [searchParams]);
+
   // Keyboard shortcut for search (/)
   useEffect(() => {
+    // 1. Initialize auth state from localStorage on mount
+    const savedAuth = localStorage.getItem("aether_auth_state");
+    // Default to true if never set (for prototype ease), or false if explicitly signed out
+    setIsAuthenticated(savedAuth === null ? true : savedAuth === "true");
+
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't trigger if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
@@ -46,9 +64,36 @@ function AppContent() {
         window.dispatchEvent(new CustomEvent("open-search"));
       }
     };
+
+    const handleSignOut = () => {
+      // 2. Clear persistence on sign out
+      setIsAuthenticated(false);
+      localStorage.setItem("aether_auth_state", "false");
+    };
+
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("sign-out", handleSignOut);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("sign-out", handleSignOut);
+    };
   }, []);
+
+  const handleLogin = () => {
+    // 3. Set persistence on login
+    setIsAuthenticated(true);
+    localStorage.setItem("aether_auth_state", "true");
+  };
+
+  // Wait until we've checked localStorage before rendering anything
+  // to prevent a "flash" of the login screen
+  if (isAuthenticated === null) return null;
+
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={handleLogin} />;
+  }
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen text-foreground overflow-x-hidden">
       <DynamicBackground />
@@ -144,7 +189,9 @@ function AppContent() {
 export default function Home() {
   return (
     <MusicProvider>
-      <AppContent />
+      <Suspense fallback={null}>
+        <AppContent />
+      </Suspense>
     </MusicProvider>
   );
 }

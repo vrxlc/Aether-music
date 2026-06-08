@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Sparkles } from "lucide-react";
 import { useMusic } from "@/contexts/music-context";
 import { cn } from "@/lib/utils";
 
@@ -110,7 +110,13 @@ export function DiscoverSection() {
 
       {/* All Tracks */}
       <section>
-        <h2 className="text-sm font-light text-foreground/80 mb-1">Aether&apos;s Special</h2>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-4 shadow-[0_0_15px_rgba(255,255,255,0.02)]">
+          <Sparkles className="w-3.5 h-3.5 text-primary" />
+          <span className="text-[10px] font-medium uppercase tracking-[0.2em] text-foreground/80">
+            Aether&apos;s Special
+          </span>
+        </div>
+
         <h2 className="text-lg font-light tracking-wide text-foreground/90 mb-6">
           All Tracks
         </h2>
